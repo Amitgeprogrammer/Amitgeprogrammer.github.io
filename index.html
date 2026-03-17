@@ -2,41 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Amit's Data Dashboard</title>
+    <title>Agenda Exchange Leaderboard</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 30px; background-color: #f4f4f9; color: #333; }
+        h1 { margin-bottom: 5px; }
+        p { color: #666; margin-bottom: 30px; }
+        
+        /* The grid that holds the cards */
+        #dashboard { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 20px; 
+        }
+        
+        /* The style for each friend's card */
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            width: 220px; 
+            text-align: left; 
+        }
+        .card h2 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 22px; }
+        .stat { font-size: 20px; margin: 10px 0; font-weight: bold; }
+        .timestamp { margin-top: 40px; color: gray; font-size: 14px; }
+    </style>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding: 50px;">
+<body>
 
-    <h1>Welcome to My Scraper Site</h1>
-    <p>This is my first live website! Data from Agenda Exchange is below:</p>
+    <h1>🏆 The Squad Dashboard</h1>
+    <p>Live Agenda Exchange Portfolio Tracking</p>
     
-    <div id="data-container" style="margin-top: 20px; font-weight: bold; padding: 20px; border: 1px solid #ccc; border-radius: 8px; display: inline-block;">
-        Checking for updates...
+    <div id="dashboard">
+        <h2>Loading the latest stats...</h2>
     </div>
+    
+    <div id="time-container" class="timestamp"></div>
 
     <script>
-        // The ?v= math adds a unique timestamp so the browser NEVER uses an old saved copy
         fetch('data.json?v=' + new Date().getTime(), { cache: 'no-store' })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                // This injects the HTML with your scraped data
-                document.getElementById('data-container').innerHTML = `
-                    <div style="font-size: 24px; margin-bottom: 10px;">
-                        Total Value: <span style="color: black;">${data.total_portfolio}</span>
-                    </div>
-                    <div style="font-size: 24px; margin-bottom: 20px;">
-                        All-Time P&L: <span style="color: green;">${data.all_time_pnl}</span>
-                    </div>
-                    <small style="color: gray;">Last updated: ${data.last_updated}</small>
-                `;
+                const dashboard = document.getElementById('dashboard');
+                dashboard.innerHTML = ''; // Clear the loading text
+                
+                // Loop through every friend in the JSON file
+                data.profiles.forEach(person => {
+                    // Check if P&L contains a minus sign to make it red, otherwise green
+                    let pnlColor = person.all_time_pnl.includes('-') ? '#ef4444' : '#22c55e';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h2>${person.name}</h2>
+                        <div class="stat">Total: <span style="font-weight: normal;">${person.total_portfolio}</span></div>
+                        <div class="stat" style="color: ${pnlColor};">P&L: ${person.all_time_pnl}</div>
+                    `;
+                    dashboard.appendChild(card);
+                });
+                
+                document.getElementById('time-container').innerText = "Last updated: " + data.last_updated;
             })
             .catch(error => {
-                console.error("Error fetching data:", error);
-                document.getElementById('data-container').innerText = "Error loading data. Check the console!";
+                document.getElementById('dashboard').innerHTML = "Error loading data. Did the GitHub Action finish?";
             });
     </script>
 
