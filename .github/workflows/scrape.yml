@@ -1,14 +1,18 @@
 name: Scrape Data
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   schedule:
-    - cron: '0 * * * *' # Runs at minute 0 of every hour
-  workflow_dispatch: # This adds a button so you can run it manually to test!
+    - cron: '0 * * * *' 
+  workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed so the bot can save data.json to your repo
+      contents: write 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,8 +22,11 @@ jobs:
         with:
           python-version: '3.x'
           
+      # WE UPDATED THIS SECTION TO INSTALL PLAYWRIGHT
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: |
+          pip install playwright
+          playwright install chromium
         
       - name: Run scraper
         run: python scraper.py
