@@ -8,7 +8,6 @@
         h1 { margin-bottom: 5px; }
         p { color: #666; margin-bottom: 30px; }
         
-        /* The grid that holds the cards */
         #dashboard { 
             display: flex; 
             flex-wrap: wrap; 
@@ -16,7 +15,6 @@
             gap: 20px; 
         }
         
-        /* The style for each friend's card */
         .card { 
             background: white; 
             padding: 20px; 
@@ -24,10 +22,30 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
             width: 220px; 
             text-align: left; 
+            position: relative;
         }
+        
         .card h2 { margin-top: 0; color: #0f172a; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 22px; }
         .stat { font-size: 20px; margin: 10px 0; font-weight: bold; }
         .timestamp { margin-top: 40px; color: gray; font-size: 14px; }
+        
+        /* Styling for the rank number */
+        .rank-badge {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #0f172a;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -46,17 +64,38 @@
             .then(response => response.json())
             .then(data => {
                 const dashboard = document.getElementById('dashboard');
-                dashboard.innerHTML = ''; // Clear the loading text
+                dashboard.innerHTML = ''; 
                 
-                // Loop through every friend in the JSON file
-                data.profiles.forEach(person => {
-                    // Check if P&L contains a minus sign to make it red, otherwise green
+                // 1. Helper function to turn "+$548.08" into a real number (548.08)
+                function parsePnL(pnlString) {
+                    if (!pnlString || pnlString === "N/A") return -999999;
+                    // Remove the +, $, and any commas so we can do math on it
+                    let cleanNum = pnlString.replace('+', '').replace('$', '').replace(/,/g, '');
+                    return parseFloat(cleanNum);
+                }
+
+                // 2. Sort the profiles array from highest P&L to lowest
+                let sortedProfiles = data.profiles.sort((a, b) => {
+                    return parsePnL(b.all_time_pnl) - parsePnL(a.all_time_pnl);
+                });
+                
+                // 3. Loop through the sorted array and give them medals
+                sortedProfiles.forEach((person, index) => {
+                    let rank = index + 1;
+                    let medal = "🏅"; // Default medal
+                    let badgeColor = "#0f172a"; // Default badge color
+                    
+                    if (rank === 1) { medal = "🥇"; badgeColor = "#fbbf24"; } // Gold
+                    else if (rank === 2) { medal = "🥈"; badgeColor = "#9ca3af"; } // Silver
+                    else if (rank === 3) { medal = "🥉"; badgeColor = "#b45309"; } // Bronze
+
                     let pnlColor = person.all_time_pnl.includes('-') ? '#ef4444' : '#22c55e';
                     
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
-                        <h2>${person.name}</h2>
+                        <div class="rank-badge" style="background: ${badgeColor};">${rank}</div>
+                        <h2>${medal} ${person.name}</h2>
                         <div class="stat">Total: <span style="font-weight: normal;">${person.total_portfolio}</span></div>
                         <div class="stat" style="color: ${pnlColor};">P&L: ${person.all_time_pnl}</div>
                     `;
