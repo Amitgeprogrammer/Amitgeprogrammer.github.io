@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 
-url = "https://agenda.exchange"
-# Being polite and identifying our bot!
+# Make sure this points to your PUBLIC profile URL, not just the homepage!
+url = "https://agenda.exchange/profile/amitgep" 
 headers = {"User-Agent": "AmitProjectScraper/1.0"}
 
 try:
@@ -12,20 +12,26 @@ try:
     response.raise_for_status()
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    # Grabbing the page title to prove the connection works
-    page_title = soup.title.text if soup.title else "No title found"
+    # 1. Hunt for the "Total" value
+    total_label = soup.find('span', string=lambda t: t and 'Total' in t)
+    # This goes up to the container, then finds the next box containing the actual number
+    total_value = total_label.find_parent('div').find_next_sibling('div').text.strip() if total_label else "N/A"
     
-    # Packaging it up with a timestamp
+    # 2. Hunt for the "All-Time P&L" value
+    pnl_label = soup.find('span', string=lambda t: t and 'All-Time P&L' in t)
+    pnl_value = pnl_label.find_parent('div').find_next_sibling('div').text.strip() if pnl_label else "N/A"
+    
+    # 3. Package both numbers into our JSON file
     data = {
-        "scraped_data": page_title,
+        "total_portfolio": total_value,
+        "all_time_pnl": pnl_value,
         "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     
-    # Saving it to the JSON file
     with open("data.json", "w") as f:
         json.dump(data, f)
         
-    print("Successfully scraped and saved data!")
+    print(f"Success! Grabbed Total: {total_value} and P&L: {pnl_value}")
     
 except Exception as e:
     print(f"Error: {e}")
