@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from playwright.sync_api import sync_playwright
 
 # 1. The Squad's URLs
@@ -44,7 +45,7 @@ def run():
         # 3. Save the combined list to the JSON file
         final_output = {
             "profiles": scraped_data,
-            "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "last_updated": datetime.now(ZoneInfo("Asia/Jerusalem")).strftime("%Y-%m-%d %H:%M:%S") # <-- Updated!
         }
         
         with open("data.json", "w") as f:
