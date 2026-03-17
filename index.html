@@ -17,7 +17,10 @@
 
 </body>
 <script>
-        fetch('data.json')
+        // The ?v=... math adds a unique timestamp so the browser NEVER uses an old saved copy
+        fetch('data.json?v=' + new Date().getTime(), { cache: 'no-store' })
+            .then(response => response.json())
+            .then(data => {
             .then(response => response.json())
             .then(data => {
                 document.getElementById('data-container').innerHTML = `
