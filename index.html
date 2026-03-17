@@ -2,27 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Agenda Competition</title>
+    <title>Amit's Data Dashboard</title>
 </head>
 <body style="font-family: sans-serif; text-align: center; padding: 50px;">
 
-    <h2>Maintaining the agenda...</h2>
-    <h1>IS OUR TOP PRIORITY.</h1>
-    <br>
-    <p>Agenda Exchange Competition Live:</p>
+    <h1>Welcome to My Scraper Site</h1>
+    <p>This is my first live website! Data from Agenda Exchange is below:</p>
     
-    <div id="data-container" style="margin-top: 20px; font-weight: bold; color: blue;">
+    <div id="data-container" style="margin-top: 20px; font-weight: bold; padding: 20px; border: 1px solid #ccc; border-radius: 8px; display: inline-block;">
         Checking for updates...
     </div>
 
-</body>
-<script>
-        // The ?v=... math adds a unique timestamp so the browser NEVER uses an old saved copy
+    <script>
+        // The ?v= math adds a unique timestamp so the browser NEVER uses an old saved copy
         fetch('data.json?v=' + new Date().getTime(), { cache: 'no-store' })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
             .then(data => {
-            .then(response => response.json())
-            .then(data => {
+                // This injects the HTML with your scraped data
                 document.getElementById('data-container').innerHTML = `
                     <div style="font-size: 24px; margin-bottom: 10px;">
                         Total Value: <span style="color: black;">${data.total_portfolio}</span>
@@ -34,7 +35,10 @@
                 `;
             })
             .catch(error => {
-                document.getElementById('data-container').innerText = "Waiting for the first scrape to finish...";
+                console.error("Error fetching data:", error);
+                document.getElementById('data-container').innerText = "Error loading data. Check the console!";
             });
     </script>
+
+</body>
 </html>
