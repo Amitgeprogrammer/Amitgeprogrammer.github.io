@@ -20,8 +20,15 @@
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('data-container').innerHTML = 
-                    `Data: ${data.scraped_data} <br> <small style="color: gray;">Last scraped: ${data.last_updated}</small>`;
+                document.getElementById('data-container').innerHTML = `
+                    <div style="font-size: 24px; margin-bottom: 10px;">
+                        Total Value: <span style="color: black;">${data.total_portfolio}</span>
+                    </div>
+                    <div style="font-size: 24px; margin-bottom: 20px;">
+                        All-Time P&L: <span style="color: green;">${data.all_time_pnl}</span>
+                    </div>
+                    <small style="color: gray;">Last updated: ${data.last_updated}</small>
+                `;
             })
             .catch(error => {
                 document.getElementById('data-container').innerText = "Waiting for the first scrape to finish...";
