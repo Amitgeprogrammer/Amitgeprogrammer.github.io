@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda Exchange Leaderboard</title>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 30px; background-color: #f4f4f9; color: #333; }
@@ -29,7 +30,6 @@
         .stat { font-size: 20px; margin: 10px 0; font-weight: bold; }
         .timestamp { margin-top: 40px; color: gray; font-size: 14px; }
         
-        /* Styling for the rank number */
         .rank-badge {
             position: absolute;
             top: -15px;
@@ -45,6 +45,19 @@
             font-weight: bold;
             font-size: 18px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 2. THE MOBILE RESPONSIVE UPGRADE */
+        @media (max-width: 600px) {
+            body { padding: 15px; } /* Slightly less padding on small screens */
+            #dashboard {
+                flex-direction: column; /* Stacks them vertically */
+                align-items: center; /* Centers the column */
+            }
+            .card {
+                width: 90%; /* Makes the card stretch to fill the phone screen */
+                max-width: 350px; 
+            }
         }
     </style>
 </head>
@@ -66,28 +79,24 @@
                 const dashboard = document.getElementById('dashboard');
                 dashboard.innerHTML = ''; 
                 
-                // 1. Helper function to turn "+$548.08" into a real number (548.08)
                 function parsePnL(pnlString) {
                     if (!pnlString || pnlString === "N/A") return -999999;
-                    // Remove the +, $, and any commas so we can do math on it
                     let cleanNum = pnlString.replace('+', '').replace('$', '').replace(/,/g, '');
                     return parseFloat(cleanNum);
                 }
 
-                // 2. Sort the profiles array from highest P&L to lowest
                 let sortedProfiles = data.profiles.sort((a, b) => {
                     return parsePnL(b.all_time_pnl) - parsePnL(a.all_time_pnl);
                 });
                 
-                // 3. Loop through the sorted array and give them medals
                 sortedProfiles.forEach((person, index) => {
                     let rank = index + 1;
-                    let medal = "🏅"; // Default medal
-                    let badgeColor = "#0f172a"; // Default badge color
+                    let medal = "🏅"; 
+                    let badgeColor = "#0f172a"; 
                     
-                    if (rank === 1) { medal = "🥇"; badgeColor = "#fbbf24"; } // Gold
-                    else if (rank === 2) { medal = "🥈"; badgeColor = "#9ca3af"; } // Silver
-                    else if (rank === 3) { medal = "🥉"; badgeColor = "#b45309"; } // Bronze
+                    if (rank === 1) { medal = "🥇"; badgeColor = "#fbbf24"; } 
+                    else if (rank === 2) { medal = "🥈"; badgeColor = "#9ca3af"; } 
+                    else if (rank === 3) { medal = "🥉"; badgeColor = "#b45309"; } 
 
                     let pnlColor = person.all_time_pnl.includes('-') ? '#ef4444' : '#22c55e';
                     
