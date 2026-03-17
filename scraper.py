@@ -1,37 +1,46 @@
-import requests
-from bs4 import BeautifulSoup
 import json
 from datetime import datetime
+from playwright.sync_api import sync_playwright
 
-# Make sure this points to your PUBLIC profile URL, not just the homepage!
-url = "https://agenda.exchange/profile/amitgep" 
-headers = {"User-Agent": "AmitProjectScraper/1.0"}
+url = "https://agenda.exchange/profile/amitgep"
 
-try:
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
-    # 1. Hunt for the "Total" value
-    total_label = soup.find('span', string=lambda t: t and 'Total' in t)
-    # This goes up to the container, then finds the next box containing the actual number
-    total_value = total_label.find_parent('div').find_next_sibling('div').text.strip() if total_label else "N/A"
-    
-    # 2. Hunt for the "All-Time P&L" value
-    pnl_label = soup.find('span', string=lambda t: t and 'All-Time P&L' in t)
-    pnl_value = pnl_label.find_parent('div').find_next_sibling('div').text.strip() if pnl_label else "N/A"
-    
-    # 3. Package both numbers into our JSON file
-    data = {
-        "total_portfolio": total_value,
-        "all_time_pnl": pnl_value,
-        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    
-    with open("data.json", "w") as f:
-        json.dump(data, f)
+def run():
+    with sync_playwright() as p:
+        # 1. Launch the invisible Chromium browser
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page(user_agent="AmitProjectScraper/1.0")
         
-    print(f"Success! Grabbed Total: {total_value} and P&L: {pnl_value}")
-    
-except Exception as e:
-    print(f"Error: {e}")
+        print("Loading page and waiting for JavaScript to run...")
+        page.goto(url)
+        
+        try:
+            # 2. Wait up to 15 seconds for the site to finish loading the word "Total"
+            page.wait_for_selector("text=Total", timeout=15000)
+            
+            # 3. Locate "Total", jump to its parent container, and grab the sibling container with the number
+            total_value = page.locator("span:text-is('Total')").locator("xpath=..").locator("xpath=following-sibling::div").inner_text().strip()
+            
+            # 4. Do the exact same thing for the P&L
+            pnl_value = page.locator("span:text-is('All-Time P&L')").locator("xpath=..").locator("xpath=following-sibling::div").inner_text().strip()
+            
+        except Exception as e:
+            print(f"Could not find elements: {e}")
+            total_value = "N/A"
+            pnl_value = "N/A"
+
+        print(f"Success! Grabbed Total: {total_value} and P&L: {pnl_value}")
+        
+        # 5. Save it to your JSON file
+        data = {
+            "total_portfolio": total_value,
+            "all_time_pnl": pnl_value,
+            "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        with open("data.json", "w") as f:
+            json.dump(data, f)
+            
+        browser.close()
+
+if __name__ == "__main__":
+    run()
