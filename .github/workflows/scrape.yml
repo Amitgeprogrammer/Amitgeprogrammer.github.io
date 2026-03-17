@@ -1,0 +1,33 @@
+name: Scrape Data
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs at minute 0 of every hour
+  workflow_dispatch: # This adds a button so you can run it manually to test!
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed so the bot can save data.json to your repo
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+        
+      - name: Run scraper
+        run: python scraper.py
+        
+      - name: Commit and push if changed
+        run: |
+          git config user.name "Automated Scraper"
+          git config user.email "actions@users.noreply.github.com"
+          git add data.json
+          git commit -m "Update scraped data" || exit 0
+          git push
