@@ -16,6 +16,8 @@ def run():
         try:
             # 2. Wait up to 15 seconds for the site to finish loading the word "Total"
             page.wait_for_selector("text=Total", timeout=15000)
+            # Force the robot to wait exactly 3 seconds for the numbers to drop in
+            page.wait_for_timeout(3000)
             
             # 3. Locate "Total", jump to its parent container, and grab the sibling container with the number
             total_value = page.locator("span:text-is('Total')").locator("xpath=..").locator("xpath=following-sibling::div").inner_text().strip()
