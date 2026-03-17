@@ -16,4 +16,15 @@
     </div>
 
 </body>
+<script>
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('data-container').innerHTML = 
+                    `Data: ${data.scraped_data} <br> <small style="color: gray;">Last scraped: ${data.last_updated}</small>`;
+            })
+            .catch(error => {
+                document.getElementById('data-container').innerText = "Waiting for the first scrape to finish...";
+            });
+    </script>
 </html>
